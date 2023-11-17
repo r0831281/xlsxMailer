@@ -9,16 +9,18 @@ import pandas as pd
 from O365 import Message, MSGraphProtocol, Account, FileSystemTokenBackend
 
 
-
+pd.set_option('display.width', 1000)
+pd.set_option('colheader_justify', 'center')
 html_template =     """ 
             <html>
             <head>
                 <title>Site data</title>
             </head>
+            <link rel="stylesheet" type="text/css" href="df_style.css"/>
             <body>
                 <h1>Site data</h1>
                 <p>filler text</p>
-                    {}
+                    {table}
             </body>
             </html>
         """
@@ -83,6 +85,7 @@ def getBySite(site, xlxs):
         print("error")    
     print(data1)
     data2 = df['Sheet2'].loc[site, cols]
+    data2.dropna(inplace=True)
     try:
         data2 = data2.to_frame()
         data2 = data2.transpose()
@@ -117,7 +120,7 @@ reciever is %s
                   %(recievr))
             while not getConfirmation():
                 recievr = getsendrAndRecievr()
-            final_html_data = html_template.format(data.to_html())
+            final_html_data = html_template.format(table=data.to_html(table_id='mystyle', index=True, justify='center'))
             m = authenticate_to_outlook()
             if m.is_authenticated:
                 a = m.new_message()
