@@ -4,7 +4,7 @@ Gets data from excel file and mails it
 # installation
 `git clone https://github.com/r0831281/xlsxMailer.git`
 
- `pip install -r req.txt`
+ `python3 pip install -r req.txt`
 
 
  <pre>
@@ -27,7 +27,7 @@ __  __  __  ____  __  __ _ _            ___      _            ___      _ _      
     `-x XLXS_FILE_LOCATION`
 
   example:
-    `python csvtest.py 123 c:\pth\to\file.xlsx`
+    `python3 csvtest.py 123 c:\pth\to\file.xlsx`
 ## Optional arguments:
   `--version`
   `--verbose`
