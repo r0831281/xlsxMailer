@@ -4,6 +4,7 @@ import argparse
 import pandas as pd
 import smtplib
 import getpass
+from O365 import Message
 
 parser = argparse.ArgumentParser(description='get site data.')
 parser.add_argument('site', metavar='-s', type=int, nargs='+',
