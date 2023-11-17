@@ -1,10 +1,28 @@
 #!/usr/bin/python3
 
+#app id ff91f935-c699-4f05-8844-0570bd88b673
+
+
 import argparse
 import pandas as pd
 import smtplib
 import getpass
-from O365 import Message
+from O365 import Message, MSGraphProtocol, Account, FileSystemTokenBackend
+
+
+scopes = ['https://graph.microsoft.com/Mail.ReadWrite', 'https://graph.microsoft.com/Mail.Send', 'basic']
+
+
+html_template =     """ 
+            <html>
+            <head>
+                <title></title>
+            </head>
+            <body>
+                    {}
+            </body>
+            </html>
+        """
 
 parser = argparse.ArgumentParser(description='get site data.')
 parser.add_argument('site', metavar='-s', type=int, nargs='+',
@@ -15,16 +33,20 @@ parser.add_argument('--verbose', '-v', action='count', default=0)
 parser.add_help = True
 
 
+protocol = MSGraphProtocol()
+
+
 def authenticate_to_outlook(sendr):
     try:
-        email = sendr
-        password = getpass.getpass("Enter your password: ")
-
-        server = smtplib.SMTP('smtp-mail.outlook.com', 587)
-        server.starttls()
-        server.login(email, password)
-
-        return server
+           
+            client_secret = 'MC~8Q~82rBtOVn2SWA0bkJ8nPJZJUwdpCQWNoa_a'
+            client_id = 'ff91f935-c699-4f05-8844-0570bd88b673'
+            credentials = (client_id, client_secret)
+            token_backend = FileSystemTokenBackend(token_path='/tokenStore', token_filename='my_token.txt')
+            o365_auth = Account(credentials)
+            o365_auth.authenticate(scopes=scopes, token_backend=token_backend, account_email=sendr)
+            m = o365_auth.new_message()
+            return m
     except Exception as e:
         print("An error occurred: ", e)
     
@@ -82,12 +104,19 @@ reciever is %s
                   %(sendr,recievr))
             while not getConfirmation():
                 sendr, recievr = getsendrAndRecievr()
-            server = authenticate_to_outlook(sendr)
-            print("sending mail")
-            data = parseMail(data, sendr, recievr)
 
-
-
+            final_html_data = html_template.format(data.to_html(index=False))
+            m = authenticate_to_outlook(sendr)
+            if m.is_authenticated:
+                print("sending mail")
+                m.to.add(recievr)
+                m.subject = "test"
+                m.body = final_html_data
+                m.send()
+                print("mail sent")
+            else:
+                print("not authenticated")
+            
     except Exception as e:
         print(e)
         parser.print_help()
