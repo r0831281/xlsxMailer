@@ -6,8 +6,6 @@
 import argparse
 import time
 import pandas as pd 
-import smtplib
-import getpass
 from O365 import Message, MSGraphProtocol, Account, FileSystemTokenBackend
 
 
