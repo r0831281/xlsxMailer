@@ -10,7 +10,7 @@ import getpass
 from O365 import Message, MSGraphProtocol, Account, FileSystemTokenBackend
 
 
-scopes = ['https://graph.microsoft.com/Mail.ReadWrite', 'https://graph.microsoft.com/Mail.Send', 'basic']
+scopes = ['https://graph.microsoft.com/.default/Mail.ReadWrite', 'https://graph.microsoft.com/Mail.Send', 'basic']
 
 
 html_template =     """ 
@@ -43,10 +43,9 @@ def authenticate_to_outlook(sendr):
             client_id = 'ff91f935-c699-4f05-8844-0570bd88b673'
             credentials = (client_id, client_secret)
             token_backend = FileSystemTokenBackend(token_path='/tokenStore', token_filename='my_token.txt')
-            o365_auth = Account(credentials)
+            o365_auth = Account(credentials = credentials, auth_flow_type='credentials', protocol=protocol, tenant_id='f8cdef31-a31e-4b4a-93e4-5f571e91255a')
             o365_auth.authenticate(scopes=scopes, token_backend=token_backend, account_email=sendr)
-            m = o365_auth.new_message()
-            return m
+            return o365_auth
     except Exception as e:
         print("An error occurred: ", e)
     
@@ -58,8 +57,8 @@ def getConfirmation():
             return False
         else:
             print("invalid input")
-
-    
+            return getConfirmation()
+   
 
 def getsendrAndRecievr():
     sendr = input("Enter sender e-mail address: ")
@@ -71,9 +70,6 @@ def getBySite(site, xlxs):
     cols =  ['data1', 'data3', 'data4']
     outData = df["Sheet1"].loc[site, cols]._append(df['Sheet2'].loc[site, cols])
     return outData
-
-def parseMail(data, sendr, recievr):
-    return data
 
 
 if __name__ == '__main__':
@@ -108,6 +104,7 @@ reciever is %s
             final_html_data = html_template.format(data.to_html(index=False))
             m = authenticate_to_outlook(sendr)
             if m.is_authenticated:
+                m.new_message()
                 print("sending mail")
                 m.to.add(recievr)
                 m.subject = "test"
