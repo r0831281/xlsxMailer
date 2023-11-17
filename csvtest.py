@@ -13,6 +13,20 @@ parser.add_argument('--version', '-V', action='version', version='%(prog)s 1.0')
 parser.add_argument('--verbose', '-v', action='count', default=0)
 parser.add_help = True
 
+
+def authenticate_to_outlook(sendr):
+    try:
+        email = sendr
+        password = getpass.getpass("Enter your password: ")
+
+        server = smtplib.SMTP('smtp-mail.outlook.com', 587)
+        server.starttls()
+        server.login(email, password)
+
+        return server
+    except Exception as e:
+        print("An error occurred: ", e)
+    
 def getConfirmation():
         a = input("do you want to continue? (y/n): ")
         if a == 'y':
@@ -56,6 +70,7 @@ reciever is %s
                   %(sendr,recievr))
             while not getConfirmation():
                 sendr, recievr = getsendrAndRecievr()
+            server = authenticate_to_outlook(sendr)
             print("sending mail")
             data = parseMail(data, sendr, recievr)
 
