@@ -16,14 +16,15 @@ html_template =     """
                 <title>Site data</title>
             </head>
             <body>
+                <h1>Site data</h1>
+                <p>filler text</p>
                     {}
             </body>
             </html>
         """
 
 parser = argparse.ArgumentParser(description='get site data.')
-parser.add_argument('site', metavar='-s', type=int, nargs='+',
-                    help='site number')
+parser.add_argument('site', metavar='-s', type=int, nargs='+',help='site number')
 parser.add_argument('xlxs', metavar='-x', type=str, nargs='+', help='xlxs file location')
 parser.add_argument('--version', '-V', action='version', version='%(prog)s 1.0')
 parser.add_argument('--verbose', '-v', action='count', default=0)
@@ -35,14 +36,22 @@ scopes = protocol.get_scopes_for(['basic', 'message_all'])
 
 def authenticate_to_outlook():
     try:
-           
             client_secret = ' '
             client_id = 'ff91f935-c699-4f05-8844-0570bd88b673'
             credentials = (client_id, client_secret)
             token_backend = FileSystemTokenBackend(token_path='/tokenStore', token_filename='my_token.txt')
-            o365_auth = Account(credentials)
-            o365_auth.authenticate(scopes=scopes, token_backend=token_backend)
-            return o365_auth
+            o365_auth = Account(credentials, token_backend=token_backend)
+            if not None or not token_backend.load_token():
+                if o365_auth.is_authenticated:
+                    print("authenticated")
+                    return o365_auth
+                else:
+                    print("not authenticated")
+                    o365_auth.authenticate(scopes=scopes) 
+
+                    return o365_auth
+                   
+
     except Exception as e:
         print("An error occurred: ", e)
     
