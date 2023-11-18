@@ -7,23 +7,12 @@ import argparse
 import time
 import pandas as pd 
 from O365 import Message, MSGraphProtocol, Account, FileSystemTokenBackend
-
+import datetime
 
 pd.set_option('display.width', 1000)
 pd.set_option('colheader_justify', 'center')
-html_template =     """ 
-            <html>
-            <head>
-                <title>Site data</title>
-            </head>
-            <link rel="stylesheet" type="text/css" href="df_style.css"/>
-            <body>
-                <h1>Site data</h1>
-                <p>filler text</p>
-                    {table}
-            </body>
-            </html>
-        """
+
+
 
 parser = argparse.ArgumentParser(description='get site data.')
 parser.add_argument('site', metavar='-s', type=int, nargs='+',help='site number')
@@ -35,6 +24,23 @@ parser.add_help = True
 
 protocol = MSGraphProtocol()
 scopes = protocol.get_scopes_for(['basic', 'message_all'])
+
+
+
+html_template =     """ 
+            <html>
+            <head>
+                <title>site data</title>
+            </head>
+            <body>
+                <h1>{site}</h1>
+                <p>filler text</p>
+                    {table}
+                    </br>
+                    <p>data was pulled on {date}</p>
+            </body>
+            </html>
+        """
 
 def authenticate_to_outlook():
     try:
@@ -75,7 +81,7 @@ def getsendrAndRecievr():
 
 def getBySite(site, xlxs):
     df = pd.read_excel(xlxs, index_col=0, sheet_name=None)
-    cols =  ['data1', 'data3', 'data4']
+    cols =  ['data1', 'data3', 'data4'] # columns to be selected
     data1 = df["Sheet1"].loc[site, cols]
     data1.dropna(inplace=True)
     try:
@@ -107,6 +113,8 @@ __  __  __  ____  __  __ _ _            ___      _            ___      _ _      
 """)
     try:
         args = parser.parse_args()
+        site = "site" + str(args.site[0])
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if not args.site or not args.xlxs:
             parser.print_help()
         else:
@@ -120,7 +128,7 @@ reciever is %s
                   %(recievr))
             while not getConfirmation():
                 recievr = getsendrAndRecievr()
-            final_html_data = html_template.format(table=data.to_html(table_id='mystyle', index=True, justify='center'))
+            final_html_data = html_template.format(table=data.to_html(table_id='mystyle', index=True, justify='center'), site=site, date=now)
             m = authenticate_to_outlook()
             if m.is_authenticated:
                 a = m.new_message()
